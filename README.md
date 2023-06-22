@@ -1,10 +1,10 @@
 # CValueStore
 
-Welcome to CValueStore, a  distributed key-value store implemented in Objective-C. 🚀
+Welcome to CValueStore, a distributed key-value store implemented in Objective-C. 🚀
 
 ## Overview
 
-CValueStore is a project that aims to provide a fun and interactive way to explore the concepts of distributed key-value storage. With CValueStore, you can create a cluster of nodes, store key-value pairs, and retrieve values based on keys using consistent hashing.
+CValueStore is a project that aims to provide a simple and interactive way to explore the concepts of distributed key-value storage. With CValueStore, you can create a cluster of nodes, store key-value pairs, and retrieve values based on keys using consistent hashing.
 
 ## Features
 
@@ -17,10 +17,9 @@ CValueStore is a project that aims to provide a fun and interactive way to explo
 
 To get started with CValueStore, follow these steps:
 
-1. Clone the repository: `git clone https://github.com/your-username/CValueStore.git`
-2. Open the Xcode project file.
-3. Explore the different classes like `Cluster`, `Node`, and `ConsistentHash` to understand their roles in the system.
-4. Run the project and interact with the cluster by adding nodes, storing key-value pairs, and retrieving values.
+1. Clone the repository: `git clone https://github.com/harrywsanders/CValueStore.git`
+2. Explore the different classes like `Cluster`, `Node`, and `ConsistentHash` to understand their roles in the system.
+3. Run the project and interact with the cluster by adding nodes, storing key-value pairs, and retrieving values.
 
 ## Example Usage
 
@@ -48,3 +47,17 @@ NSString *value2 = [cluster getNodeForKey:@"key2"].storage[@"key2"];
 
 NSLog(@"Value for key1: %@", value1);
 NSLog(@"Value for key2: %@", value2);
+
+## Goals
+
+Here are some potential improvements and features I'm considering for the future of CValueStore:
+
+- **Replication and Data Redundancy**: My top priority right now is to implement data replication across multiple nodes, meaning data will be duplicated and stored on different nodes, ensuring that even if one node fails, the data remains safe and accessible
+
+- **Load Balancing**: I also want to enhance CValueStore's load balancing capabilities. By intelligently distributing the workload across nodes based on their capacity and performance, I can ensure that no node is overwhelmed while others remain underutilized, which'll help optimize the usage of resources and improve the overall performance of the system.
+
+- **Virtual Nodes**: Introducing virtual nodes to the consistent hashing algorithm will bring additional flexibility and efficiency to CValueStore. Virtual nodes allow for more precise control over key distribution and load balancing. When nodes are added or removed, the workload will be automatically redistributed, ensuring smooth operations without disruptions.
+
+- **Consistency Models**: I want to be able to support different consistency models, such as eventual consistency or strong consistency, allowing users to choose the level of data consistency based on their application requirements. This is a further out goal.
+
+As always– shoot me an email or let me know however if you have any questions, and feel free to contribute!
