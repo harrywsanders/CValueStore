@@ -1,6 +1,6 @@
 # CValueStore
 
-Welcome to CValueStore, a whimsical distributed key-value store implemented in Objective-C. 🚀
+Welcome to CValueStore, a  distributed key-value store implemented in Objective-C. 🚀
 
 ## Overview
 
