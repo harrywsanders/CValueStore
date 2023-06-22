@@ -48,6 +48,7 @@ NSString *value2 = [cluster getNodeForKey:@"key2"].storage[@"key2"];
 NSLog(@"Value for key1: %@", value1);
 NSLog(@"Value for key2: %@", value2);
 
+```
 ## Goals
 
 Here are some potential improvements and features I'm considering for the future of CValueStore:
