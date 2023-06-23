@@ -4,8 +4,8 @@
 
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
-        // Create a cluster
-        Cluster *cluster = [[Cluster alloc] init];
+        // Create a cluster with a replication factor of 100
+        Cluster *cluster = [[Cluster alloc] initWithReplicationFactor:100];
 
         // Create nodes and add them to the cluster
         Node *node1 = [[Node alloc] initWithName:@"Node1"];

@@ -2,50 +2,67 @@
 #import <CommonCrypto/CommonDigest.h>
 
 @implementation ConsistentHash
-- (id)initWithNodes:(NSArray*)nodes {
+
+- (id)initWithNodes:(NSArray*)nodes replicationFactor:(NSInteger)factor {
     self = [super init];
     if (self) {
-        NSMutableDictionary* nodeDict = [NSMutableDictionary dictionary];
-        NSMutableArray* hashes = [NSMutableArray array];
+        self.nodeDict = [NSMutableDictionary dictionary];
+        self.replicationFactor = factor;
 
         for (NSString* node in nodes) {
-            NSString* nodeHash = [self MD5Hash:node];
-            nodeDict[nodeHash] = node;
-            [hashes addObject:nodeHash];
+            [self addNodeWithName:node];
         }
-
-        self.nodeDict = [NSDictionary dictionaryWithDictionary:nodeDict];
-
-        // Sort the hashes
-        NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:nil ascending:YES];
-        self.sortedHashes = [hashes sortedArrayUsingDescriptors:@[sortDescriptor]];
     }
     return self;
 }
 
+- (void)addNodeWithName:(NSString*)nodeName {
+    for (NSInteger i = 0; i < self.replicationFactor; i++) {
+        NSString* virtualNodeName = [NSString stringWithFormat:@"%@#%ld", nodeName, (long)i];
+        NSString* nodeHash = [self SHA256Hash:virtualNodeName];
+        self.nodeDict[nodeHash] = nodeName;
+    }
+    self.sortedHashes = [[self.nodeDict allKeys] sortedArrayUsingSelector:@selector(compare:)];
+}
+
+- (void)removeNodeWithName:(NSString*)nodeName {
+    for (NSInteger i = 0; i < self.replicationFactor; i++) {
+        NSString* virtualNodeName = [NSString stringWithFormat:@"%@#%ld", nodeName, (long)i];
+        NSString* nodeHash = [self SHA256Hash:virtualNodeName];
+        [self.nodeDict removeObjectForKey:nodeHash];
+    }
+    self.sortedHashes = [[self.nodeDict allKeys] sortedArrayUsingSelector:@selector(compare:)];
+}
+
 - (NSString*)getNodeForKey:(NSString*)key {
-    NSString* keyHash = [self MD5Hash:key];
-    // The array of sorted hashes is non-empty, so the bisect_right will always find an element.
+    if (!key) {
+        return nil;
+    }
+
+    NSString* keyHash = [self SHA256Hash:key];
     NSUInteger index = [self.sortedHashes indexOfObject:keyHash 
                                          inSortedRange:(NSRange){0, [self.sortedHashes count]} 
                                                options:NSBinarySearchingInsertionIndex 
                                        usingComparator:^(id a, id b) { 
                                            return [a compare:b options:NSNumericSearch]; 
                                        }];
-    // If the hash is greater than the greatest hash, wrap around to the first hash.
-    if (index == [self.sortedHashes count]) {
-        index = 0;
-    }
+
+    index = index % [self.sortedHashes count];
     return self.nodeDict[self.sortedHashes[index]];
 }
 
-- (NSString*)MD5Hash:(NSString*)input {
-    const char *cStr = [input UTF8String];
-    unsigned char digest[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(cStr, (CC_LONG)strlen(cStr), digest);
-    NSMutableString *output = [NSMutableString stringWithCapacity:CC_MD5_DIGEST_LENGTH * 2];
+- (NSString*)SHA256Hash:(NSString*)input {
+    if (!input) {
+        return nil;
+    }
+    
+    NSData *data = [input dataUsingEncoding:NSUTF8StringEncoding];
+    uint8_t digest[CC_SHA256_DIGEST_LENGTH];
+    CC_SHA256(data.bytes, (CC_LONG)data.length, digest);
+    
+    NSMutableString *output = [NSMutableString stringWithCapacity:HashStringLength];
 
-    for(int i = 0; i < CC_MD5_DIGEST_LENGTH; i++) {
+    for(int i = 0; i < CC_SHA256_DIGEST_LENGTH; i++) {
         [output appendFormat:@"%02x", digest[i]];
     }
 

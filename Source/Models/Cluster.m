@@ -4,52 +4,43 @@
 @implementation Cluster
 {
     ConsistentHash* _consistentHash;
+    NSMutableDictionary* _nodeDict;
 }
 
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _nodes = [NSMutableArray array];
+        _nodeDict = [NSMutableDictionary dictionary];
         _consistentHash = [[ConsistentHash alloc] initWithNodes:@[]];
     }
     return self;
 }
 
 - (void)addNode:(Node *)node {
-    [self.nodes addObject:node];
-
-    // When a node is added, we need to update the ConsistentHash object
-    NSMutableArray *nodeNames = [NSMutableArray array];
-    for (Node *node in self.nodes) {
-        [nodeNames addObject:node.name];
+    if (!node || [_nodeDict objectForKey:node.name]) {
+        return;
     }
-    _consistentHash = [[ConsistentHash alloc] initWithNodes:nodeNames];
+
+    [_nodeDict setObject:node forKey:node.name];
+    [_consistentHash addNodeWithName:node.name];
 }
 
 - (void)removeNode:(Node *)node {
-    [self.nodes removeObject:node];
-
-    // When a node is removed, we need to update the ConsistentHash object
-    NSMutableArray *nodeNames = [NSMutableArray array];
-    for (Node *node in self.nodes) {
-        [nodeNames addObject:node.name];
+    if (!node || ![_nodeDict objectForKey:node.name]) {
+        return;
     }
-    _consistentHash = [[ConsistentHash alloc] initWithNodes:nodeNames];
+
+    [_nodeDict removeObjectForKey:node.name];
+    [_consistentHash removeNodeWithName:node.name];
 }
 
 - (Node *)getNodeForKey:(NSString *)key {
-    // Use the ConsistentHash object to get the name of the node for the key
-    NSString *nodeName = [_consistentHash getNodeForKey:key];
-
-    // Search the nodes for the one with this name
-    for (Node *node in self.nodes) {
-        if ([node.name isEqualToString:nodeName]) {
-            return node;
-        }
+    if (!key) {
+        return nil;
     }
 
-    // If no node is found (which should not happen), return nil
-    return nil;
+    NSString *nodeName = [_consistentHash getNodeForKey:key];
+    return [_nodeDict objectForKey:nodeName];
 }
 
 @end
